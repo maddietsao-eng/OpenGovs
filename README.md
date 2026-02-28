@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OpenGovs - Public Budget Transparency
+
+AI-powered exploration of U.S. Department of Education budgets (FY2023–2025). Ask questions about education spending and get answers backed by official budget summary documents.
+
+## Tech Stack
+
+- **Framework**: Next.js 14, App Router, TypeScript
+- **Styling**: TailwindCSS
+- **AI**: Vercel AI SDK + Anthropic Claude
+- **Search**: BM25 relevance scoring over pre-processed PDF chunks
+- **Deployment**: Vercel
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- Anthropic API key
+
+### Installation
+
+```bash
+git clone <repo-url>
+cd opengovs
+npm install
+```
+
+### Environment Setup
+
+```bash
+cp .env.example .env.local
+# Edit .env.local and add your ANTHROPIC_API_KEY
+```
+
+### Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Data Pipeline
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Budget data is pre-processed from PDFs hosted on [Google Drive](https://drive.google.com/drive/folders/1KWb1V0Oi3NIzXS_TgKlfRZdk11vNQqjU). The processed data is committed to the repo in `data/`.
 
-## Learn More
+To re-process the PDFs (only needed if source data changes):
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run process-pdfs
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/
+  page.tsx              # Landing page with score cards + chat
+  layout.tsx            # Root layout
+  api/chat/route.ts     # Chat API (Claude + searchBudget tool)
+  components/           # UI components
+data/
+  chunks.json           # Pre-processed PDF text chunks
+  scores.json           # Budget score cards data
+scripts/
+  process-pdfs.ts       # PDF download & extraction pipeline
+  lib/search.ts         # BM25 search over chunks
+```

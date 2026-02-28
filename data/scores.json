@@ -1,0 +1,53 @@
+{
+  "years": [
+    {
+      "year": "2023",
+      "totalBudget": "$88.3 billion",
+      "totalBudgetNum": 88.3,
+      "yoyChange": "+20.9%",
+      "yoyChangeNum": 20.9,
+      "grade": "A-",
+      "insight": "Historic increase of $15.3B over 2021, with major investments in K-12 equity, special education, and college affordability.",
+      "topCategories": [
+        { "name": "Elementary & Secondary Education", "amount": "$36.5B" },
+        { "name": "Student Financial Assistance", "amount": "$24.6B" },
+        { "name": "Special Education (IDEA)", "amount": "$16.3B" },
+        { "name": "Career & Technical Education", "amount": "$2.1B" },
+        { "name": "Higher Education Programs", "amount": "$3.2B" }
+      ]
+    },
+    {
+      "year": "2024",
+      "totalBudget": "$90.0 billion",
+      "totalBudgetNum": 90.0,
+      "yoyChange": "+1.9%",
+      "yoyChangeNum": 1.9,
+      "grade": "B+",
+      "insight": "Modest growth with $10.8B increase over enacted levels, continued focus on Title I, mental health, and teacher pipeline investments.",
+      "topCategories": [
+        { "name": "Elementary & Secondary Education", "amount": "$38.1B" },
+        { "name": "Student Financial Assistance", "amount": "$25.4B" },
+        { "name": "Special Education (IDEA)", "amount": "$17.1B" },
+        { "name": "Career & Technical Education", "amount": "$2.2B" },
+        { "name": "Higher Education Programs", "amount": "$3.4B" }
+      ]
+    },
+    {
+      "year": "2025",
+      "totalBudget": "$82.4 billion",
+      "totalBudgetNum": 82.4,
+      "yoyChange": "+4.0%",
+      "yoyChangeNum": 4.0,
+      "grade": "B",
+      "insight": "$3.1B increase from FY2024 CR level, with new Academic Acceleration grants and expanded preschool access in Title I communities.",
+      "topCategories": [
+        { "name": "Elementary & Secondary Education", "amount": "$39.1B" },
+        { "name": "Student Financial Assistance", "amount": "$25.8B" },
+        { "name": "Special Education (IDEA)", "amount": "$18.6B" },
+        { "name": "Career & Technical Education", "amount": "$2.1B" },
+        { "name": "Higher Education Programs", "amount": "$3.5B" }
+      ]
+    }
+  ],
+  "overallInsight": "The U.S. Department of Education budget grew significantly from FY2023 to FY2025, with a strong emphasis on closing equity gaps, expanding special education funding, and improving college affordability."
+}
