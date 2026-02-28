@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   const messages = await convertToModelMessages(uiMessages);
 
   const result = streamText({
-    model: anthropic("claude-4-opus-20260226"),
+    model: anthropic("claude-opus-4-6"),
     system: `You are OpenGovs, a budget transparency assistant for U.S. Department of Education budgets (FY2023–FY2025). Your data comes from official budget summary PDFs.
 
 Rules:
