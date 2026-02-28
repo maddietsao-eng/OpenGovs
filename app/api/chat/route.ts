@@ -1,12 +1,13 @@
 import { anthropic } from "@ai-sdk/anthropic";
-import { streamText, tool, stepCountIs } from "ai";
+import { streamText, tool, stepCountIs, convertToModelMessages } from "ai";
 import { z } from "zod";
 import { searchChunks } from "@/scripts/lib/search";
 
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  const { messages: uiMessages } = await req.json();
+  const messages = await convertToModelMessages(uiMessages);
 
   const result = streamText({
     model: anthropic("claude-3-5-sonnet-20241022"),
