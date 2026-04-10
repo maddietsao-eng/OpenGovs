@@ -52,13 +52,8 @@ export default function Page() {
             target="_blank"
             className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-navy transition-colors"
           >
-            <span className="underline">View Data Source</span>
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <span className="underline">View Source Documents</span>
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -78,11 +73,7 @@ export default function Page() {
             if (!text) return null;
             return (
               <div key={message.id}>
-                <div
-                  className={`flex ${
-                    message.role === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
+                <div className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                   <div
                     className={`rounded-lg py-2.5 md:py-3 px-3 md:px-4 max-w-[90%] md:max-w-[85%] ${
                       message.role === "user"
@@ -98,7 +89,6 @@ export default function Page() {
               </div>
             );
           })}
-
           {isLoading && (
             <div className="flex items-center gap-1.5 text-gray-500 animate-pulse ml-4 mb-6">
               <div className="w-2 h-2 rounded-full bg-navy/40 animate-[bounce_1s_infinite]" />
@@ -131,13 +121,11 @@ export default function Page() {
                   <span className="text-white font-bold text-xl">OG</span>
                 </div>
               </div>
-              <h1 className="text-3xl md:text-5xl font-bold text-navy mb-3">
-                OpenGovs
-              </h1>
+              <h1 className="text-3xl md:text-5xl font-bold text-navy mb-3">OpenGovs</h1>
               <p className="text-base md:text-lg text-gray-600 mb-6 px-4 max-w-2xl mx-auto">
-                Explore U.S. Department of Education budgets (FY2023–2025).
+                AI-powered government budget transparency.
                 <br className="hidden md:block" />
-                AI-powered transparency for public spending.
+                Ask questions about public spending — get answers grounded in official documents.
               </p>
             </div>
           )}
@@ -146,39 +134,25 @@ export default function Page() {
 
           {hasMessages && (
             <div className="absolute -top-8 right-4 md:right-6">
-              <a
-                href="/"
-                className="text-sm text-gray-500 hover:text-navy transition-colors duration-200"
-              >
+              <a href="/" className="text-sm text-gray-500 hover:text-navy transition-colors duration-200">
                 New chat ↗
               </a>
             </div>
           )}
 
-          <form
-            ref={formRef}
-            onSubmit={handleSubmitForm}
-            className="relative flex w-full max-w-3xl mx-auto"
-          >
+          <form ref={formRef} onSubmit={handleSubmitForm} className="relative flex w-full max-w-3xl mx-auto">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               autoFocus
-              placeholder="Ask about education budgets..."
-              className="w-full p-3 md:p-4 pr-[100px] md:pr-[130px] bg-white border border-gray-200 rounded-full shadow-sm 
-                focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy 
-                text-sm md:text-base transition-all duration-200 
-                placeholder:text-gray-400 hover:border-gray-300"
+              placeholder="Ask about government spending..."
+              className="w-full p-3 md:p-4 pr-[100px] md:pr-[130px] bg-white border border-gray-200 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy text-sm md:text-base transition-all duration-200 placeholder:text-gray-400 hover:border-gray-300"
               disabled={isLoading}
             />
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
-              className="absolute right-2 top-1/2 -translate-y-1/2 px-4 md:px-6 py-2 md:py-2.5 
-                bg-navy text-white rounded-full shadow-sm hover:bg-navy-light 
-                disabled:opacity-50 disabled:cursor-not-allowed 
-                font-medium text-sm md:text-base min-w-[80px] md:min-w-[110px] 
-                transition-all duration-200 hover:shadow-md active:scale-95"
+              className="absolute right-2 top-1/2 -translate-y-1/2 px-4 md:px-6 py-2 md:py-2.5 bg-navy text-white rounded-full shadow-sm hover:bg-navy-light disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm md:text-base min-w-[80px] md:min-w-[110px] transition-all duration-200 hover:shadow-md active:scale-95"
             >
               Ask
             </button>
@@ -187,12 +161,8 @@ export default function Page() {
           {!hasMessages && (
             <>
               <div className="mt-6 md:mt-8">
-                <SuggestedQuestions
-                  onSelectQuestion={handleSelectQuestion}
-                  isLoading={isLoading}
-                />
+                <SuggestedQuestions onSelectQuestion={handleSelectQuestion} isLoading={isLoading} />
               </div>
-
               <div className="text-center pt-6 md:pt-8 pb-8 text-gray-500 text-xs md:text-sm">
                 {isLoading ? (
                   <div className="flex items-center justify-center gap-2">
@@ -206,11 +176,7 @@ export default function Page() {
                 ) : (
                   <span>
                     powered by{" "}
-                    <a
-                      href="https://www.anthropic.com"
-                      target="_blank"
-                      className="underline hover:text-navy"
-                    >
+                    <a href="https://www.anthropic.com" target="_blank" className="underline hover:text-navy">
                       Claude
                     </a>
                     {" + "}
