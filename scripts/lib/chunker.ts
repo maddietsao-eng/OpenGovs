@@ -1,6 +1,8 @@
 export interface Chunk {
   id: string;
   year: string;
+  agency: string;
+  agencyShort: string;
   text: string;
   pageStart: number;
   pageEnd: number;
@@ -17,7 +19,9 @@ function estimateTokens(text: string): number {
 export function chunkText(
   fullText: string,
   year: string,
-  pages: { pageNum: number; text: string }[]
+  pages: { pageNum: number; text: string }[],
+  agency: string = "Unknown Agency",
+  agencyShort: string = "GOV"
 ): Chunk[] {
   const chunks: Chunk[] = [];
   let chunkIndex = 0;
@@ -25,6 +29,8 @@ export function chunkText(
   let buffer = "";
   let bufferPageStart = 1;
   let bufferPageEnd = 1;
+
+  const agencySlug = agencyShort.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
 
   for (const page of pages) {
     const cleaned = page.text.replace(/\s+/g, " ").trim();
@@ -40,8 +46,10 @@ export function chunkText(
       const remaining = words.slice(cutoff - OVERLAP);
 
       chunks.push({
-        id: `${year}-${chunkIndex}`,
+        id: `${agencySlug}-${year}-${chunkIndex}`,
         year,
+        agency,
+        agencyShort,
         text: chunkWords.join(" "),
         pageStart: bufferPageStart,
         pageEnd: bufferPageEnd,
@@ -56,8 +64,10 @@ export function chunkText(
 
   if (buffer.trim()) {
     chunks.push({
-      id: `${year}-${chunkIndex}`,
+      id: `${agencySlug}-${year}-${chunkIndex}`,
       year,
+      agency,
+      agencyShort,
       text: buffer.trim(),
       pageStart: bufferPageStart,
       pageEnd: bufferPageEnd,
