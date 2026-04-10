@@ -6,23 +6,15 @@ import http from "http";
 const pdfParse = require("pdf-parse");
 import { chunkText } from "./lib/chunker";
 
-const PDF_SOURCES = [
-  {
-    year: "2023",
-    name: "23summary.pdf",
-    fileId: "1EnzDeyPQ-lb7PotCoxiaBLiA11d7DZZ6",
-  },
-  {
-    year: "2024",
-    name: "24summary.pdf",
-    fileId: "1kGUNUCG_zDkoIcSjru1wZGW-ksDfnmr8",
-  },
-  {
-    year: "2025",
-    name: "25summary.pdf",
-    fileId: "1cPIPgN1bMVpBmnhfqTz1L9RdrGV_4kaf",
-  },
-];
+// ── Load sources from config file (edit budget-sources.json to add new budgets) ──
+const SOURCES_PATH = path.resolve(__dirname, "../budget-sources.json");
+const PDF_SOURCES: Array<{
+  fileId: string;
+  agency: string;
+  agencyShort: string;
+  year: string;
+  name: string;
+}> = JSON.parse(fs.readFileSync(SOURCES_PATH, "utf-8"));
 
 const DATA_DIR = path.resolve(__dirname, "../data");
 const TEMP_DIR = path.resolve(__dirname, "../.tmp-pdfs");
@@ -104,51 +96,71 @@ async function main() {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.mkdirSync(TEMP_DIR, { recursive: true });
 
+  console.log(`\nProcessing ${PDF_SOURCES.length} budget document(s)...\n`);
+
   const allChunks: ReturnType<typeof chunkText> = [];
   const yearSummaries: Record<string, string> = {};
 
   for (const source of PDF_SOURCES) {
-    const pdfPath = path.join(TEMP_DIR, source.name);
+    const safeName = `${source.agencyShort}-${source.year}.pdf`.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    const pdfPath = path.join(TEMP_DIR, safeName);
     const url = `https://drive.google.com/uc?export=download&id=${source.fileId}`;
 
-    console.log(`Downloading ${source.name}...`);
+    console.log(`[${source.agencyShort} ${source.year}] Downloading ${source.name}...`);
     await downloadFile(url, pdfPath);
 
-    console.log(`Extracting text from ${source.name}...`);
+    console.log(`[${source.agencyShort} ${source.year}] Extracting text...`);
     const buffer = fs.readFileSync(pdfPath);
     const pages = await extractPages(buffer);
 
     console.log(
-      `  Found ${pages.length} pages, total chars: ${pages.reduce((s, p) => s + p.text.length, 0)}`
+      `[${source.agencyShort} ${source.year}] Found ${pages.length} pages, ` +
+      `total chars: ${pages.reduce((s, p) => s + p.text.length, 0)}`
     );
 
     const chunks = chunkText(
       pages.map((p) => p.text).join("\n\n"),
       source.year,
-      pages
+      pages,
+      source.agency,
+      source.agencyShort
     );
-    console.log(`  Created ${chunks.length} chunks`);
+    console.log(`[${source.agencyShort} ${source.year}] Created ${chunks.length} chunks`);
 
     allChunks.push(...chunks);
 
-    const first8Pages = pages
-      .slice(0, 8)
-      .map((p) => p.text)
-      .join("\n\n");
-    yearSummaries[source.year] = first8Pages.slice(0, 4000);
+    const summaryKey = `${source.agencyShort}-${source.year}`;
+    const first8Pages = pages.slice(0, 8).map((p) => p.text).join("\n\n");
+    yearSummaries[summaryKey] = first8Pages.slice(0, 4000);
   }
 
   const chunksPath = path.join(DATA_DIR, "chunks.json");
   fs.writeFileSync(chunksPath, JSON.stringify(allChunks, null, 2));
-  console.log(`\nWrote ${allChunks.length} chunks to ${chunksPath}`);
+  console.log(`\n✓ Wrote ${allChunks.length} total chunks to ${chunksPath}`);
 
   const summariesPath = path.join(DATA_DIR, "year-summaries.json");
   fs.writeFileSync(summariesPath, JSON.stringify(yearSummaries, null, 2));
-  console.log(`Wrote year summaries to ${summariesPath}`);
+  console.log(`✓ Wrote summaries to ${summariesPath}`);
+
+  const sourcesIndexPath = path.join(DATA_DIR, "sources-index.json");
+  fs.writeFileSync(
+    sourcesIndexPath,
+    JSON.stringify(
+      PDF_SOURCES.map((s) => ({
+        agency: s.agency,
+        agencyShort: s.agencyShort,
+        year: s.year,
+        name: s.name,
+      })),
+      null,
+      2
+    )
+  );
+  console.log(`✓ Wrote sources index to ${sourcesIndexPath}`);
 
   fs.rmSync(TEMP_DIR, { recursive: true, force: true });
-  console.log("Cleaned up temp files.");
-  console.log("\nDone! Now run the score generation step if needed.");
+  console.log("✓ Cleaned up temp files.");
+  console.log("\nDone! Commit data/chunks.json, data/year-summaries.json, and data/sources-index.json to deploy.");
 }
 
 main().catch((err) => {
