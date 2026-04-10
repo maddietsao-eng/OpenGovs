@@ -2,9 +2,9 @@
 const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["pdf-parse"],
-    outputFileTracingIncludes: {
-      "/api/chat": ["./data/**/*"],
-    },
+  },
+  outputFileTracingIncludes: {
+    "/api/chat": ["./data/**/*"],
   },
 };
 
