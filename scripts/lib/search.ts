@@ -29,7 +29,7 @@ let _docFreq: Map<string, number> | null = null;
 
 function loadChunks(): Chunk[] {
   if (_chunks) return _chunks;
-  const chunksPath = path.resolve(__dirname, "../../data/chunks.json");
+  const chunksPath = path.join(process.cwd(), "data", "chunks.json");
   _chunks = JSON.parse(fs.readFileSync(chunksPath, "utf-8")) as Chunk[];
   return _chunks;
 }
@@ -44,23 +44,19 @@ function tokenize(text: string): string[] {
 
 function buildIdf(): { idf: Map<string, number>; docFreq: Map<string, number> } {
   if (_idf && _docFreq) return { idf: _idf, docFreq: _docFreq };
-
   const chunks = loadChunks();
   const df = new Map<string, number>();
-
   for (const chunk of chunks) {
     const seen = new Set(tokenize(chunk.text));
     for (const term of Array.from(seen)) {
       df.set(term, (df.get(term) || 0) + 1);
     }
   }
-
   const N = chunks.length;
   const idf = new Map<string, number>();
   for (const [term, freq] of df) {
     idf.set(term, Math.log((N - freq + 0.5) / (freq + 0.5) + 1));
   }
-
   _idf = idf;
   _docFreq = df;
   return { idf, docFreq: df };
@@ -76,11 +72,9 @@ function bm25Score(
 ): number {
   const dl = docTokens.length;
   const tf = new Map<string, number>();
-
   for (const token of docTokens) {
     tf.set(token, (tf.get(token) || 0) + 1);
   }
-
   let score = 0;
   for (const term of queryTokens) {
     const termFreq = tf.get(term) || 0;
@@ -89,13 +83,12 @@ function bm25Score(
     const denominator = termFreq + k1 * (1 - b + b * (dl / avgDl));
     score += termIdf * (numerator / denominator);
   }
-
   return score;
 }
 
 export function getAvailableSources(): { agency: string; agencyShort: string; year: string }[] {
   try {
-    const indexPath = path.resolve(__dirname, "../../data/sources-index.json");
+    const indexPath = path.join(process.cwd(), "data", "sources-index.json");
     return JSON.parse(fs.readFileSync(indexPath, "utf-8"));
   } catch {
     const chunks = loadChunks();
