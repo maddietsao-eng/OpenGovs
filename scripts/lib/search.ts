@@ -4,15 +4,19 @@ import path from "path";
 export interface Chunk {
   id: string;
   year: string;
+  agency: string;
+  agencyShort: string;
   text: string;
   pageStart: number;
   pageEnd: number;
   chunkIndex: number;
 }
 
-interface SearchResult {
+export interface SearchResult {
   id: string;
   year: string;
+  agency: string;
+  agencyShort: string;
   text: string;
   pageStart: number;
   pageEnd: number;
@@ -89,17 +93,41 @@ function bm25Score(
   return score;
 }
 
+export function getAvailableSources(): { agency: string; agencyShort: string; year: string }[] {
+  try {
+    const indexPath = path.resolve(__dirname, "../../data/sources-index.json");
+    return JSON.parse(fs.readFileSync(indexPath, "utf-8"));
+  } catch {
+    const chunks = loadChunks();
+    const seen = new Map<string, { agency: string; agencyShort: string; year: string }>();
+    for (const c of chunks) {
+      const key = `${c.agencyShort}-${c.year}`;
+      if (!seen.has(key)) {
+        seen.set(key, { agency: c.agency || "Unknown", agencyShort: c.agencyShort || "GOV", year: c.year });
+      }
+    }
+    return Array.from(seen.values());
+  }
+}
+
 export function searchChunks(
   query: string,
-  options: { year?: string; topK?: number } = {}
+  options: { year?: string; agency?: string; topK?: number } = {}
 ): SearchResult[] {
-  const { year, topK = 8 } = options;
+  const { year, agency, topK = 8 } = options;
   const chunks = loadChunks();
   const { idf } = buildIdf();
 
   let filtered = chunks;
   if (year && year !== "all") {
-    filtered = chunks.filter((c) => c.year === year);
+    filtered = filtered.filter((c) => c.year === year);
+  }
+  if (agency && agency !== "all") {
+    filtered = filtered.filter(
+      (c) =>
+        c.agencyShort?.toLowerCase() === agency.toLowerCase() ||
+        c.agency?.toLowerCase().includes(agency.toLowerCase())
+    );
   }
 
   const queryTokens = tokenize(query);
@@ -113,6 +141,8 @@ export function searchChunks(
     return {
       id: chunk.id,
       year: chunk.year,
+      agency: chunk.agency || "Unknown Agency",
+      agencyShort: chunk.agencyShort || "GOV",
       text: chunk.text,
       pageStart: chunk.pageStart,
       pageEnd: chunk.pageEnd,
