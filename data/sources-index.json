@@ -1,0 +1,209 @@
+[
+  {
+    "agency": "Australian Department of Defence",
+    "agencyShort": "AUS-DEF",
+    "year": "2025",
+    "name": "Australia Defence Portfolio Budget 2024-25",
+    "country": "Australia",
+    "countryCode": "AU",
+    "department": "Defence"
+  },
+  {
+    "agency": "Australian Department of Health and Aged Care",
+    "agencyShort": "AUS-HLT",
+    "year": "2025",
+    "name": "Australia Health and Aged Care Budget 2024-25",
+    "country": "Australia",
+    "countryCode": "AU",
+    "department": "Healthcare"
+  },
+  {
+    "agency": "Australian Department of Finance",
+    "agencyShort": "AUS-FIN",
+    "year": "2026",
+    "name": "Australia Finance Portfolio Budget 2025-26",
+    "country": "Australia",
+    "countryCode": "AU",
+    "department": "Finance"
+  },
+  {
+    "agency": "French Ministry of Armed Forces",
+    "agencyShort": "FRA-DEF",
+    "year": "2024",
+    "name": "France Defence Annual Report 2024",
+    "country": "France",
+    "countryCode": "FR",
+    "department": "Defence"
+  },
+  {
+    "agency": "French Ministry of Armed Forces",
+    "agencyShort": "FRA-DEF",
+    "year": "2025",
+    "name": "France Defence Key Figures 2025",
+    "country": "France",
+    "countryCode": "FR",
+    "department": "Defence"
+  },
+  {
+    "agency": "French Ministry of National Education",
+    "agencyShort": "FRA-EDU",
+    "year": "2024",
+    "name": "France National Education Key Data 2024",
+    "country": "France",
+    "countryCode": "FR",
+    "department": "Education"
+  },
+  {
+    "agency": "French Ministry of National Education",
+    "agencyShort": "FRA-EDU",
+    "year": "2025",
+    "name": "France Finance Law 2025 — Education",
+    "country": "France",
+    "countryCode": "FR",
+    "department": "Education"
+  },
+  {
+    "agency": "French Ministry of Health",
+    "agencyShort": "FRA-HLT",
+    "year": "2025",
+    "name": "France Social Security Finance Bill 2025",
+    "country": "France",
+    "countryCode": "FR",
+    "department": "Healthcare"
+  },
+  {
+    "agency": "French Ministry of Health",
+    "agencyShort": "FRA-HLT",
+    "year": "2024",
+    "name": "France LFSS Healthcare Key Figures 2024",
+    "country": "France",
+    "countryCode": "FR",
+    "department": "Healthcare"
+  },
+  {
+    "agency": "Japan Ministry of Defense",
+    "agencyShort": "JPN-DEF",
+    "year": "2022",
+    "name": "Japan Defense Programs and Budget FY2022",
+    "country": "Japan",
+    "countryCode": "JP",
+    "department": "Defence"
+  },
+  {
+    "agency": "Japan Ministry of Defense",
+    "agencyShort": "JPN-DEF",
+    "year": "2025",
+    "name": "Japan Defense White Paper 2025",
+    "country": "Japan",
+    "countryCode": "JP",
+    "department": "Defence"
+  },
+  {
+    "agency": "Japan Ministry of Finance",
+    "agencyShort": "JPN-OVR",
+    "year": "2025",
+    "name": "Japan FY2025 Draft Budget Highlights",
+    "country": "Japan",
+    "countryCode": "JP",
+    "department": "Overall Budget"
+  },
+  {
+    "agency": "Philippines Department of Education",
+    "agencyShort": "PHL-EDU",
+    "year": "2024",
+    "name": "Philippines DepEd Budget 2024",
+    "country": "Philippines",
+    "countryCode": "PH",
+    "department": "Education"
+  },
+  {
+    "agency": "Philippines Department of Education",
+    "agencyShort": "PHL-EDU",
+    "year": "2025",
+    "name": "Philippines DepEd Budget 2025",
+    "country": "Philippines",
+    "countryCode": "PH",
+    "department": "Education"
+  },
+  {
+    "agency": "Philippines Department of National Defense",
+    "agencyShort": "PHL-DEF",
+    "year": "2024",
+    "name": "Philippines DND Budget 2024",
+    "country": "Philippines",
+    "countryCode": "PH",
+    "department": "Defence"
+  },
+  {
+    "agency": "Philippines Department of National Defense",
+    "agencyShort": "PHL-DEF",
+    "year": "2025",
+    "name": "Philippines DND Budget 2025",
+    "country": "Philippines",
+    "countryCode": "PH",
+    "department": "Defence"
+  },
+  {
+    "agency": "Philippines Department of Health",
+    "agencyShort": "PHL-HLT",
+    "year": "2024",
+    "name": "Philippines DOH Budget 2024",
+    "country": "Philippines",
+    "countryCode": "PH",
+    "department": "Healthcare"
+  },
+  {
+    "agency": "Philippines Department of Health",
+    "agencyShort": "PHL-HLT",
+    "year": "2025",
+    "name": "Philippines DOH Budget 2025",
+    "country": "Philippines",
+    "countryCode": "PH",
+    "department": "Healthcare"
+  },
+  {
+    "agency": "Taiwan National Health Insurance Administration",
+    "agencyShort": "TWN-NHI",
+    "year": "2024",
+    "name": "Taiwan National Health Insurance System 2024",
+    "country": "Taiwan",
+    "countryCode": "TW",
+    "department": "Healthcare"
+  },
+  {
+    "agency": "Taiwan Ministry of Health and Welfare",
+    "agencyShort": "TWN-HLT",
+    "year": "2025",
+    "name": "Taiwan Health and Welfare Report 2025",
+    "country": "Taiwan",
+    "countryCode": "TW",
+    "department": "Healthcare"
+  },
+  {
+    "agency": "U.S. Department of Education",
+    "agencyShort": "USA-EDU",
+    "year": "2023",
+    "name": "FY2023 Education Budget Summary",
+    "country": "USA",
+    "countryCode": "US",
+    "department": "Education"
+  },
+  {
+    "agency": "U.S. Department of Education",
+    "agencyShort": "USA-EDU",
+    "year": "2024",
+    "name": "FY2024 Education Budget Summary",
+    "country": "USA",
+    "countryCode": "US",
+    "department": "Education"
+  },
+  {
+    "agency": "U.S. Department of Education",
+    "agencyShort": "USA-EDU",
+    "year": "2025",
+    "name": "FY2025 Education Budget Summary",
+    "country": "USA",
+    "countryCode": "US",
+    "department": "Education"
+  }
+]
