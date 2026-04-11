@@ -11,7 +11,7 @@ const COUNTRIES = [
   {
     name: "Australia",
     code: "AU",
-    flag: "ð¦ðº",
+    flag: "\uD83C\uDDE6\uD83C\uDDFA",
     departments: ["Defence", "Healthcare", "Finance"],
     color: "bg-blue-50 border-blue-200 hover:bg-blue-100",
     accent: "text-blue-700",
@@ -19,7 +19,7 @@ const COUNTRIES = [
   {
     name: "France",
     code: "FR",
-    flag: "ð«ð·",
+    flag: "\uD83C\uDDEB\uD83C\uDDF7",
     departments: ["Defence", "Education", "Healthcare"],
     color: "bg-indigo-50 border-indigo-200 hover:bg-indigo-100",
     accent: "text-indigo-700",
@@ -27,7 +27,7 @@ const COUNTRIES = [
   {
     name: "Japan",
     code: "JP",
-    flag: "ð¯ðµ",
+    flag: "\uD83C\uDDEF\uD83C\uDDF5",
     departments: ["Defence", "Overall Budget"],
     color: "bg-red-50 border-red-200 hover:bg-red-100",
     accent: "text-red-700",
@@ -35,7 +35,7 @@ const COUNTRIES = [
   {
     name: "Philippines",
     code: "PH",
-    flag: "ðµð­",
+    flag: "\uD83C\uDDF5\uD83C\uDDED",
     departments: ["Education", "Defence", "Healthcare"],
     color: "bg-yellow-50 border-yellow-200 hover:bg-yellow-100",
     accent: "text-yellow-700",
@@ -43,7 +43,7 @@ const COUNTRIES = [
   {
     name: "Taiwan",
     code: "TW",
-    flag: "ð¹ð¼",
+    flag: "\uD83C\uDDF9\uD83C\uDDFC",
     departments: ["Healthcare"],
     color: "bg-green-50 border-green-200 hover:bg-green-100",
     accent: "text-green-700",
@@ -51,7 +51,7 @@ const COUNTRIES = [
   {
     name: "USA",
     code: "US",
-    flag: "ðºð¸",
+    flag: "\uD83C\uDDFA\uD83C\uDDF8",
     departments: ["Education"],
     color: "bg-purple-50 border-purple-200 hover:bg-purple-100",
     accent: "text-purple-700",
@@ -59,11 +59,11 @@ const COUNTRIES = [
 ];
 
 const DEPT_ICONS: Record<string, string> = {
-  Defence: "ð¡ï¸",
-  Education: "ð",
-  Healthcare: "ð¥",
-  Finance: "ð°",
-  "Overall Budget": "ð",
+  Defence: "\uD83D\uDEE1\uFE0F",
+  Education: "\uD83D\uDCDA",
+  Healthcare: "\uD83C\uDFE5",
+  Finance: "\uD83D\uDCB0",
+  "Overall Budget": "\uD83D\uDCCA",
 };
 
 function CountryBrowser({
@@ -91,12 +91,18 @@ function CountryBrowser({
           <button
             key={country.code}
             disabled={isLoading}
-            onClick={() => setActiveCountry(activeCountry === country.code ? null : country.code)}
+            onClick={() =>
+              setActiveCountry(
+                activeCountry === country.code ? null : country.code
+              )
+            }
             className={`relative text-left rounded-xl border p-3 transition-all duration-150 cursor-pointer disabled:opacity-50 ${country.color}`}
           >
             <div className="flex items-center gap-2 mb-1.5">
               <span className="text-xl">{country.flag}</span>
-              <span className={`font-semibold text-sm ${country.accent}`}>{country.name}</span>
+              <span className={`font-semibold text-sm ${country.accent}`}>
+                {country.name}
+              </span>
             </div>
             <div className="flex flex-wrap gap-1">
               {country.departments.map((dept) => (
@@ -108,29 +114,44 @@ function CountryBrowser({
                   }}
                   className="inline-flex items-center gap-0.5 text-[11px] bg-white/70 border border-white/80 rounded-full px-2 py-0.5 text-gray-600 hover:bg-white hover:text-gray-900 transition-colors cursor-pointer"
                 >
-                  {DEPT_ICONS[dept] || "ð"} {dept}
+                  {DEPT_ICONS[dept] || "\uD83D\uDCCC"} {dept}
                 </span>
               ))}
             </div>
             {activeCountry === country.code && (
               <div className="mt-2 pt-2 border-t border-white/60 flex flex-col gap-1">
                 <button
-                  onClick={(e) => { e.stopPropagation(); onSelectQuestion(`What are the biggest spending priorities in ${country.name}'s budget?`); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectQuestion(
+                      `What are the biggest spending priorities in ${country.name}'s budget?`
+                    );
+                  }}
                   className="text-[11px] text-left text-gray-600 hover:text-gray-900 hover:underline"
                 >
-                  â Key priorities
+                  &gt; Key priorities
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); onSelectQuestion(`Are there any inefficiencies or concerns in ${country.name}'s government budget?`); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectQuestion(
+                      `Are there any inefficiencies or concerns in ${country.name}'s government budget?`
+                    );
+                  }}
                   className="text-[11px] text-left text-gray-600 hover:text-gray-900 hover:underline"
                 >
-                  â Budget concerns
+                  &gt; Budget concerns
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); onSelectQuestion(`How has ${country.name}'s budget changed year over year?`); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectQuestion(
+                      `How has ${country.name}'s budget changed year over year?`
+                    );
+                  }}
                   className="text-[11px] text-left text-gray-600 hover:text-gray-900 hover:underline"
                 >
-                  â Year-over-year changes
+                  &gt; Year-over-year changes
                 </button>
               </div>
             )}
@@ -140,24 +161,36 @@ function CountryBrowser({
       <div className="mt-3 flex flex-wrap justify-center gap-2">
         <button
           disabled={isLoading}
-          onClick={() => onSelectQuestion("Compare healthcare spending across all available countries. Which country spends the most per capita?")}
+          onClick={() =>
+            onSelectQuestion(
+              "Compare healthcare spending across all available countries. Which country spends the most per capita?"
+            )
+          }
           className="text-[11px] bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full px-3 py-1.5 transition-colors disabled:opacity-50"
         >
-          ð Compare healthcare across countries
+          {"\uD83C\uDF0F"} Compare healthcare across countries
         </button>
         <button
           disabled={isLoading}
-          onClick={() => onSelectQuestion("Which country spends the highest percentage of their budget on defence? Show me the figures.")}
+          onClick={() =>
+            onSelectQuestion(
+              "Which country spends the highest percentage of their budget on defence? Show me the figures."
+            )
+          }
           className="text-[11px] bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full px-3 py-1.5 transition-colors disabled:opacity-50"
         >
-          ð¡ï¸ Compare defence spending
+          {"\uD83D\uDEE1\uFE0F"} Compare defence spending
         </button>
         <button
           disabled={isLoading}
-          onClick={() => onSelectQuestion("Compare education budgets across Philippines, France, and USA. What are the main differences?")}
+          onClick={() =>
+            onSelectQuestion(
+              "Compare education budgets across Philippines, France, and USA. What are the main differences?"
+            )
+          }
           className="text-[11px] bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full px-3 py-1.5 transition-colors disabled:opacity-50"
         >
-          ð Compare education spending
+          {"\uD83D\uDCDA"} Compare education spending
         </button>
       </div>
     </div>
@@ -186,7 +219,9 @@ export default function Page() {
     }
   };
 
-  function getMessageText(message: { parts: Array<{ type: string; text?: string }> }): string {
+  function getMessageText(message: {
+    parts: Array<{ type: string; text?: string }>;
+  }): string {
     return message.parts
       .filter((p) => p.type === "text")
       .map((p) => p.text || "")
@@ -206,7 +241,12 @@ export default function Page() {
           </a>
           <div className="flex items-center gap-3">
             <span className="hidden md:flex items-center gap-1.5 text-xs text-gray-500">
-              ð¦ðº ð«ð· ð¯ðµ ðµð­ ð¹ð¼ ðºð¸
+              {"\uD83C\uDDE6\uD83C\uDDFA"}{" "}
+              {"\uD83C\uDDEB\uD83C\uDDF7"}{" "}
+              {"\uD83C\uDDEF\uD83C\uDDF5"}{" "}
+              {"\uD83C\uDDF5\uD83C\uDDED"}{" "}
+              {"\uD83C\uDDF9\uD83C\uDDFC"}{" "}
+              {"\uD83C\uDDFA\uD83C\uDDF8"}
               <span className="font-medium text-gray-700">6 countries</span>
             </span>
             <a
@@ -215,7 +255,12 @@ export default function Page() {
               className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-navy transition-colors"
             >
               <span className="underline">Source Documents</span>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -236,7 +281,11 @@ export default function Page() {
             if (!text) return null;
             return (
               <div key={message.id}>
-                <div className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  className={`flex ${
+                    message.role === "user" ? "justify-end" : "justify-start"
+                  }`}
+                >
                   <div
                     className={`rounded-lg py-2.5 md:py-3 px-3 md:px-4 max-w-[90%] md:max-w-[85%] ${
                       message.role === "user"
@@ -268,7 +317,9 @@ export default function Page() {
           hasMessages
             ? "fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-sm border-t border-gray-200"
             : "flex flex-col items-center justify-center bg-transparent"
-        } z-40 transition-all duration-300 ${!hasMessages ? "mt-20 md:mt-24" : ""}`}
+        } z-40 transition-all duration-300 ${
+          !hasMessages ? "mt-20 md:mt-24" : ""
+        }`}
       >
         <div
           className={`${
@@ -284,14 +335,22 @@ export default function Page() {
                   <span className="text-white font-bold text-xl">OG</span>
                 </div>
               </div>
-              <h1 className="text-3xl md:text-5xl font-bold text-navy mb-3">OpenGovs</h1>
+              <h1 className="text-3xl md:text-5xl font-bold text-navy mb-3">
+                OpenGovs
+              </h1>
               <p className="text-base md:text-lg text-gray-600 mb-2 px-4 max-w-2xl mx-auto">
                 AI-powered government budget transparency across 6 countries.
                 <br className="hidden md:block" />
-                Ask questions about public spending â get answers grounded in official documents.
+                Ask questions about public spending and get answers grounded in
+                official documents.
               </p>
               <p className="text-sm text-gray-400 mb-4">
-                ð¦ðº Australia &nbsp;Â·&nbsp; ð«ð· France &nbsp;Â·&nbsp; ð¯ðµ Japan &nbsp;Â·&nbsp; ðµð­ Philippines &nbsp;Â·&nbsp; ð¹ð¼ Taiwan &nbsp;Â·&nbsp; ðºð¸ USA
+                {"\uD83C\uDDE6\uD83C\uDDFA"} Australia &nbsp;&middot;&nbsp;{" "}
+                {"\uD83C\uDDEB\uD83C\uDDF7"} France &nbsp;&middot;&nbsp;{" "}
+                {"\uD83C\uDDEF\uD83C\uDDF5"} Japan &nbsp;&middot;&nbsp;{" "}
+                {"\uD83C\uDDF5\uD83C\uDDED"} Philippines &nbsp;&middot;&nbsp;{" "}
+                {"\uD83C\uDDF9\uD83C\uDDFC"} Taiwan &nbsp;&middot;&nbsp;{" "}
+                {"\uD83C\uDDFA\uD83C\uDDF8"} USA
               </p>
             </div>
           )}
@@ -300,13 +359,20 @@ export default function Page() {
 
           {hasMessages && (
             <div className="absolute -top-8 right-4 md:right-6">
-              <a href="/" className="text-sm text-gray-500 hover:text-navy transition-colors duration-200">
-                New chat â
+              <a
+                href="/"
+                className="text-sm text-gray-500 hover:text-navy transition-colors duration-200"
+              >
+                New chat &rarr;
               </a>
             </div>
           )}
 
-          <form ref={formRef} onSubmit={handleSubmitForm} className="relative flex w-full max-w-3xl mx-auto">
+          <form
+            ref={formRef}
+            onSubmit={handleSubmitForm}
+            className="relative flex w-full max-w-3xl mx-auto"
+          >
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -326,9 +392,15 @@ export default function Page() {
 
           {!hasMessages && (
             <>
-              <CountryBrowser onSelectQuestion={handleSelectQuestion} isLoading={isLoading} />
+              <CountryBrowser
+                onSelectQuestion={handleSelectQuestion}
+                isLoading={isLoading}
+              />
               <div className="mt-4 md:mt-6">
-                <SuggestedQuestions onSelectQuestion={handleSelectQuestion} isLoading={isLoading} />
+                <SuggestedQuestions
+                  onSelectQuestion={handleSelectQuestion}
+                  isLoading={isLoading}
+                />
               </div>
               <div className="text-center pt-4 md:pt-6 pb-8 text-gray-500 text-xs md:text-sm">
                 {isLoading ? (
@@ -343,12 +415,16 @@ export default function Page() {
                 ) : (
                   <span>
                     powered by{" "}
-                    <a href="https://www.anthropic.com" target="_blank" className="underline hover:text-navy">
+                    <a
+                      href="https://www.anthropic.com"
+                      target="_blank"
+                      className="underline hover:text-navy"
+                    >
                       Claude
                     </a>
                     {" + "}
                     <span className="font-medium">OpenGovs</span>
-                    {" Â· "}
+                    {" \u00B7 "}
                     <span>23 documents across 6 countries</span>
                   </span>
                 )}
