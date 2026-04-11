@@ -3,13 +3,15 @@ name: Process Budget PDFs
 on:
   push:
     paths:
-      - "budget-sources.json"
+      - "budget-sources.json"   # triggers whenever you add a new budget to the list
     branches:
       - main
 
 jobs:
   process:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
