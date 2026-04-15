@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       .join("\n");
 
   const result = streamText({
-        model: anthropic("claude-opus-4-6"),
+            model: anthropic("claude-sonnet-4-6"),
         system: `You are OpenGovs, a global government budget transparency assistant. You help citizens, journalists, researchers, and policymakers understand how public money is spent across multiple countries by analyzing official government budget documents.
 
         Available budget documents in this system:
