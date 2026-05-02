@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGOS â San Juan Flood Intelligence Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-primary: #0a0e1f;
+  --bg-panel: #131829;
+  --bg-panel-2: #1a2038;
+  --border: #1f2747;
+  --text-primary: #e8ecf5;
+  --text-secondary: #9aa3b8;
+  --text-muted: #5b6480;
+  --agos: #00d4ff;
+  --agos-dim: #0096ba;
+  --green: #00ff88;
+  --yellow: #ffcc00;
+  --orange: #ff8800;
+  --red: #ff3366;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 13px;
+  height: 100vh;
+  overflow: hidden;
+  background-image:
+    radial-gradient(circle at 25% 0%, rgba(0,212,255,0.08) 0%, transparent 40%),
+    radial-gradient(circle at 75% 100%, rgba(255,51,102,0.06) 0%, transparent 50%);
+}
+
+.dashboard {
+  display: grid;
+  grid-template-rows: 64px 88px 1fr 230px;
+  height: 100vh;
+  gap: 8px;
+  padding: 8px;
+}
+
+/* HEADER */
+header {
+  display: grid;
+  grid-template-columns: 240px 1fr 340px 180px;
+  gap: 16px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 20px;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo-icon {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg, var(--agos), var(--agos-dim));
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 22px rgba(0,212,255,0.45);
+}
+.logo-text {
+  font-weight: 800; font-size: 24px; letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--agos), #ffffff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+.logo-sub { font-size: 9px; font-weight: 600; color: var(--text-muted); letter-spacing: 2.5px; margin-top: 4px; }
+
+.location { display: flex; flex-direction: column; gap: 4px; }
+.location-main { font-weight: 700; font-size: 16px; }
+.location-sub { font-size: 11px; color: var(--text-secondary); }
+
+.status-bar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: rgba(255, 136, 0, 0.12);
+  border: 1px solid rgba(255, 136, 0, 0.35);
+}
+.status-bar .pulse {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: var(--orange);
+  animation: pulse 1.5s infinite;
+  flex-shrink: 0;
+}
+.status-bar .label { font-weight: 700; font-size: 12px; color: var(--orange); letter-spacing: 1px; }
+.status-bar .sublabel { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 136, 0, 0.7); }
+  50% { box-shadow: 0 0 0 9px rgba(255, 136, 0, 0); }
+}
+
+.time-display { font-family: 'JetBrains Mono', monospace; font-weight: 600; text-align: right; }
+.time-display .clock { font-size: 19px; color: var(--agos); letter-spacing: 1px; }
+.time-display .date { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+/* KPIs */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.kpi {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+.kpi::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--agos);
+}
+.kpi.warn::before { background: var(--orange); }
+.kpi.danger::before { background: var(--red); }
+.kpi.good::before { background: var(--green); }
+
+.kpi-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.3px; font-weight: 700; }
+.kpi-value { font-size: 28px; font-weight: 700; margin-top: 4px; font-family: 'JetBrains Mono', monospace; line-height: 1.1; }
+.kpi-trend { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.kpi-icon { font-size: 30px; opacity: 0.55; }
+
+/* MAIN GRID */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 8px;
+  min-height: 0;
+}
+
+.map-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+#map {
+  width: 100%; height: 100%;
+  border-radius: 8px;
+  background: #0a0e1f;
+}
+.map-overlay-top {
+  position: absolute;
+  top: 12px; left: 50px;
+  z-index: 1000;
+  display: flex; gap: 8px;
+}
+.map-tag {
+  background: rgba(10, 14, 31, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.map-tag .live-dot {
+  width: 6px; height: 6px; background: var(--red); border-radius: 50%;
+  display: inline-block; margin-right: 6px;
+  animation: pulse-red 1s infinite;
+}
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; } 50% { opacity: 0.3; }
+}
+
+.map-legend {
+  position: absolute;
+  bottom: 78px; left: 12px;
+  z-index: 1000;
+  background: rgba(10, 14, 31, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+.legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.legend-row:last-child { margin-bottom: 0; }
+.legend-dot { width: 11px; height: 11px; border-radius: 50%; }
+.legend-square { width: 11px; height: 11px; }
+
+.time-slider-panel {
+  position: absolute;
+  bottom: 12px; left: 12px; right: 12px;
+  z-index: 1000;
+  background: rgba(10, 14, 31, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  padding: 12px 18px;
+  border-radius: 8px;
+}
+.time-slider-row {
+  display: grid; grid-template-columns: 130px 1fr 130px;
+  gap: 16px;
+  align-items: center;
+}
+.time-slider-label { font-size: 10px; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; }
+.time-slider-future { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--agos); font-weight: 700; }
+.time-slider-future small { color: var(--text-muted); font-size: 9px; display: block; margin-top: 2px; letter-spacing: 1px; }
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(to right, var(--bg-panel-2), var(--agos), var(--bg-panel-2));
+  border-radius: 2px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  background: var(--agos);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 14px rgba(0,212,255,0.7);
+  border: 2px solid #0a0e1f;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 18px; height: 18px;
+  background: var(--agos);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 14px rgba(0,212,255,0.7);
+  border: 2px solid #0a0e1f;
+}
+
+/* SIDE PANEL */
+.side-panel {
+  display: grid;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 8px;
+  min-height: 0;
+}
+
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-badge {
+  background: var(--bg-panel-2);
+  color: var(--agos);
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* AI Insights */
+.ai-insight {
+  padding: 10px 12px;
+  background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,212,255,0.02));
+  border-left: 2px solid var(--agos);
+  border-radius: 4px;
+}
+.ai-insight.high { border-left-color: var(--red); background: linear-gradient(135deg, rgba(255,51,102,0.08), rgba(255,51,102,0.02)); }
+.ai-insight-meta { font-size: 9px; color: var(--agos); font-weight: 700; margin-bottom: 5px; letter-spacing: 1px; }
+.ai-insight.high .ai-insight-meta { color: var(--red); }
+.ai-insight-text { font-size: 11.5px; line-height: 1.45; color: var(--text-primary); }
+.ai-confidence { font-size: 9.5px; color: var(--text-muted); margin-top: 5px; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px; }
+
+/* Alerts */
+.alert-item {
+  display: flex;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: var(--bg-panel-2);
+  font-size: 11.5px;
+}
+.alert-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); white-space: nowrap; padding-top: 1px; }
+.alert-msg { flex: 1; line-height: 1.4; }
+.alert-item.high { border-left: 2px solid var(--red); }
+.alert-item.med { border-left: 2px solid var(--orange); }
+.alert-item.low { border-left: 2px solid var(--yellow); }
+
+/* Citizen reports */
+.report-item {
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: var(--bg-panel-2);
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.report-meta { display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text-muted); }
+.report-meta b { color: var(--agos); font-weight: 700; }
+.report-text { font-size: 11px; line-height: 1.4; }
+.report-tag { font-size: 9px; padding: 1px 7px; border-radius: 8px; background: rgba(255,51,102,0.18); color: var(--red); display: inline-block; align-self: flex-start; margin-top: 2px; font-weight: 700; letter-spacing: 0.5px; }
+.report-tag.med { background: rgba(255,204,0,0.18); color: var(--yellow); }
+
+/* CHARTS */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1.6fr 1.6fr 1fr;
+  gap: 8px;
+}
+.chart-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.chart-canvas-wrap { flex: 1; position: relative; min-height: 0; }
+
+/* Sensor grid */
+.sensor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  flex: 1;
+  overflow-y: auto;
+  align-content: start;
+}
+.sensor-card {
+  background: var(--bg-panel-2);
+  border-left: 2px solid var(--green);
+  padding: 7px 9px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+.sensor-card.offline { border-left-color: var(--red); opacity: 0.55; }
+.sensor-card.warn { border-left-color: var(--orange); }
+.sensor-card.crit { border-left-color: var(--red); background: rgba(255,51,102,0.08); }
+.sensor-name { font-size: 10px; font-weight: 700; color: var(--text-primary); letter-spacing: 0.3px; }
+.sensor-meta { font-size: 9px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-top: 1px; }
+.sensor-value { font-size: 13px; font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--agos); white-space: nowrap; }
+.sensor-card.offline .sensor-value { color: var(--red); }
+.sensor-card.warn .sensor-value { color: var(--orange); }
+.sensor-card.crit .sensor-value { color: var(--red); }
+
+/* Map tooltips */
+.leaflet-tooltip-own {
+  background: rgba(10,14,31,0.95) !important;
+  border: 1px solid var(--agos) !important;
+  color: var(--text-primary) !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 11px !important;
+  padding: 8px 12px !important;
+  border-radius: 4px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important;
+}
+.leaflet-tooltip-own::before { display: none !important; }
+.leaflet-control-attribution {
+  background: rgba(10,14,31,0.7) !important;
+  color: var(--text-muted) !important;
+  font-size: 9px !important;
+}
+.leaflet-control-attribution a { color: var(--text-secondary) !important; }
+.leaflet-control-zoom a {
+  background: rgba(19,24,41,0.95) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+}
+.leaflet-control-zoom a:hover { background: var(--bg-panel-2) !important; }
+
+/* scrollbars */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+</style>
+</head>
+<body>
+<div class="dashboard">
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+          <path d="M3 16s3 4 9 4 9-4 9-4"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-text">AGOS</div>
+        <div class="logo-sub">FLOOD INTELLIGENCE</div>
+      </div>
+    </div>
+
+    <div class="location">
+      <div class="location-main">San Juan City â DRRM Command Center</div>
+      <div class="location-sub">21 barangays Â· 122,180 residents Â· 5.94 kmÂ² coverage</div>
+    </div>
+
+    <div class="status-bar">
+      <div class="pulse"></div>
+      <div>
+        <div class="label">ELEVATED FLOOD RISK</div>
+        <div class="sublabel">Convective storm cell approaching from E Â· ETA 47 min</div>
+      </div>
+    </div>
+
+    <div class="time-display">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="date" id="date">---</div>
+    </div>
+  </header>
+
+  <div class="kpi-row">
+    <div class="kpi warn">
+      <div>
+        <div class="kpi-label">Forecast Lead Time</div>
+        <div class="kpi-value">4h 23m</div>
+        <div class="kpi-trend">vs. PAGASA: +3h 51m</div>
+      </div>
+      <div class="kpi-icon">â±</div>
+    </div>
+    <div class="kpi good">
+      <div>
+        <div class="kpi-label">Sensors Online</div>
+        <div class="kpi-value">23<span style="font-size:18px; color:var(--text-muted);">/25</span></div>
+        <div class="kpi-trend">92% uptime Â· 24h</div>
+      </div>
+      <div class="kpi-icon">ð¡</div>
+    </div>
+    <div class="kpi danger">
+      <div>
+        <div class="kpi-label">Barangays at Risk</div>
+        <div class="kpi-value">3</div>
+        <div class="kpi-trend">PasadeÃ±a Â· Salapan Â· Maytunas</div>
+      </div>
+      <div class="kpi-icon">â </div>
+    </div>
+    <div class="kpi">
+      <div>
+        <div class="kpi-label">Citizen Reports (1h)</div>
+        <div class="kpi-value">7</div>
+        <div class="kpi-trend">+4 vs. previous hour</div>
+      </div>
+      <div class="kpi-icon">ð¥</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="map-panel">
+      <div class="map-overlay-top">
+        <div class="map-tag"><span class="live-dot"></span>LIVE</div>
+        <div class="map-tag">FORECAST: <span id="mapForecastTime" style="color:var(--agos)">NOW</span></div>
+        <div class="map-tag">22 sensors Â· 7 reports</div>
+      </div>
+      <div id="map"></div>
+      <div class="map-legend">
+        <div style="font-size:10px; color: var(--text-muted); margin-bottom:7px; letter-spacing:1.2px; font-weight:700;">FLOOD RISK</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#00ff88"></div>Low</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#ffcc00"></div>Monitor</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#ff8800"></div>Warning</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#ff3366"></div>Critical</div>
+        <div style="height:8px"></div>
+        <div style="font-size:10px; color: var(--text-muted); margin-bottom:5px; letter-spacing:1.2px; font-weight:700;">SENSORS</div>
+        <div class="legend-row"><div class="legend-square" style="background:#00d4ff;border-radius:2px"></div>Rain Gauge</div>
+        <div class="legend-row"><div class="legend-dot" style="background:#00ff88"></div>Water Level</div>
+      </div>
+      <div class="time-slider-panel">
+        <div class="time-slider-row">
+          <div class="time-slider-label">FORECAST SCRUB<br/><span style="color:var(--agos);font-size:11px;">Drag to see future â</span></div>
+          <input type="range" id="timeSlider" min="0" max="12" value="0" step="1">
+          <div class="time-slider-future" id="timeSliderLabel">NOW<small>+0 HOURS</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-panel">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">â¡ AGOS AI Insights</div>
+          <div class="panel-badge">4 ACTIVE</div>
+        </div>
+        <div class="panel-body" id="aiInsights"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">ð Live Alert Feed</div>
+          <div class="panel-badge">7 TODAY</div>
+        </div>
+        <div class="panel-body" id="alertFeed"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">ð Citizen Reports</div>
+          <div class="panel-badge">7 Â· LAST 1H</div>
+        </div>
+        <div class="panel-body" id="citizenReports"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-panel">
+      <div class="panel-header">
+        <div class="panel-title">ð§ Rainfall Forecast â Multi-Source Â· next 12h</div>
+        <div class="panel-badge">AGOS LOCAL MODEL</div>
+      </div>
+      <div class="chart-canvas-wrap"><canvas id="rainChart"></canvas></div>
+    </div>
+    <div class="chart-panel">
+      <div class="panel-header">
+        <div class="panel-title">ð§ Water Levels â Live Â· last 6h</div>
+        <div class="panel-badge">4 STATIONS</div>
+      </div>
+      <div class="chart-canvas-wrap"><canvas id="waterChart"></canvas></div>
+    </div>
+    <div class="chart-panel">
+      <div class="panel-header">
+        <div class="panel-title">ð¡ Sensor Network</div>
+        <div class="panel-badge">23/25 ONLINE</div>
+      </div>
+      <div class="sensor-grid" id="sensorGrid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============= MOCK DATA =============
+
+const barangays = [
+  { name: "Addition Hills",   lat: 14.6020, lng: 121.0410, baseRisk: 0.30, pop: 16000, elev: 25 },
+  { name: "Balong-Bato",      lat: 14.6055, lng: 121.0260, baseRisk: 0.45, pop: 13000, elev: 18 },
+  { name: "Batis",            lat: 14.6065, lng: 121.0310, baseRisk: 0.40, pop: 9000,  elev: 20 },
+  { name: "Corazon de Jesus", lat: 14.5985, lng: 121.0310, baseRisk: 0.55, pop: 12000, elev: 14 },
+  { name: "ErmitaÃ±o",         lat: 14.5950, lng: 121.0310, baseRisk: 0.65, pop: 7000,  elev: 11 },
+  { name: "Greenhills",       lat: 14.6055, lng: 121.0445, baseRisk: 0.20, pop: 4000,  elev: 28 },
+  { name: "Halo-halo",        lat: 14.6010, lng: 121.0260, baseRisk: 0.50, pop: 6000,  elev: 16 },
+  { name: "Isabelita",        lat: 14.6020, lng: 121.0290, baseRisk: 0.40, pop: 5000,  elev: 18 },
+  { name: "Kabayanan",        lat: 14.5990, lng: 121.0350, baseRisk: 0.55, pop: 8000,  elev: 14 },
+  { name: "Little Baguio",    lat: 14.6090, lng: 121.0395, baseRisk: 0.18, pop: 7000,  elev: 30 },
+  { name: "Maytunas",         lat: 14.5945, lng: 121.0345, baseRisk: 0.85, pop: 5500,  elev: 9  },
+  { name: "Onse",             lat: 14.6020, lng: 121.0305, baseRisk: 0.45, pop: 9500,  elev: 17 },
+  { name: "PasadeÃ±a",         lat: 14.5980, lng: 121.0395, baseRisk: 0.92, pop: 8500,  elev: 8  },
+  { name: "Pedro Cruz",       lat: 14.6020, lng: 121.0265, baseRisk: 0.40, pop: 6500,  elev: 19 },
+  { name: "Progreso",         lat: 14.6055, lng: 121.0405, baseRisk: 0.30, pop: 4500,  elev: 24 },
+  { name: "Rivera",           lat: 14.5985, lng: 121.0285, baseRisk: 0.50, pop: 5000,  elev: 15 },
+  { name: "Salapan",          lat: 14.5955, lng: 121.0250, baseRisk: 0.88, pop: 11000, elev: 7  },
+  { name: "San Perfecto",     lat: 14.6055, lng: 121.0350, baseRisk: 0.30, pop: 7500,  elev: 22 },
+  { name: "Santa Lucia",      lat: 14.5950, lng: 121.0290, baseRisk: 0.60, pop: 6500,  elev: 12 },
+  { name: "Tibagan",          lat: 14.6050, lng: 121.0290, baseRisk: 0.40, pop: 5500,  elev: 20 },
+  { name: "West Crame",       lat: 14.6090, lng: 121.0445, baseRisk: 0.18, pop: 8500,  elev: 32 }
+];
+
+const sensors = [
+  { id: 'AGOS-RG-01', type: 'rain', lat: 14.6015, lng: 121.0350, name: 'City Hall', status: 'online', value: 22.5, unit: 'mm/h' },
+  { id: 'AGOS-RG-02', type: 'rain', lat: 14.5965, lng: 121.0260, name: 'Salapan',   status: 'online', value: 38.2, unit: 'mm/h' },
+  { id: 'AGOS-RG-03', type: 'rain', lat: 14.5985, lng: 121.0395, name: 'PasadeÃ±a',  status: 'online', value: 41.7, unit: 'mm/h' },
+  { id: 'AGOS-RG-04', type: 'rain', lat: 14.6055, lng: 121.0405, name: 'Greenhills',status: 'online', value: 12.3, unit: 'mm/h' },
+  { id: 'AGOS-RG-05', type: 'rain', lat: 14.6090, lng: 121.0395, name: 'Lt. Baguio',status: 'online', value: 8.5,  unit: 'mm/h' },
+  { id: 'AGOS-WL-01', type: 'water', lat: 14.5960, lng: 121.0280, name: 'ErmitaÃ±o Creek', status: 'online', value: 1.85, unit: 'm', critical: 2.5 },
+  { id: 'AGOS-WL-02', type: 'water', lat: 14.5970, lng: 121.0330, name: 'San Juan River', status: 'online', value: 2.10, unit: 'm', critical: 3.0 },
+  { id: 'AGOS-WL-03', type: 'water', lat: 14.6020, lng: 121.0410, name: 'Diliman Creek',  status: 'online', value: 0.95, unit: 'm', critical: 2.0 },
+  { id: 'AGOS-WL-04', type: 'water', lat: 14.6055, lng: 121.0265, name: 'Reservoir Outlet', status: 'offline', value: null, unit: 'm' }
+];
+
+const citizenReports = [
+  { lat: 14.5975, lng: 121.0395, time: '14:18', barangay: 'PasadeÃ±a', desc: 'Tubig na sa P. Guevarra cor. Aurora', severity: 'high', author: 'Maria S.' },
+  { lat: 14.5955, lng: 121.0250, time: '14:22', barangay: 'Salapan',  desc: 'Heavy rain, water rising fast near Salapan creek', severity: 'high', author: 'Brgy Tanod' },
+  { lat: 14.5945, lng: 121.0345, time: '14:25', barangay: 'Maytunas', desc: 'Drainage backed up, ankle-deep already', severity: 'med', author: 'Roberto L.' },
+  { lat: 14.5985, lng: 121.0290, time: '14:31', barangay: 'Rivera',   desc: 'Manhole overflowing on Pinaglabanan St.', severity: 'med', author: 'DRRMO Field' },
+  { lat: 14.5955, lng: 121.0245, time: '14:35', barangay: 'Salapan',  desc: 'Knee-deep on Salapan Rd, vehicles stuck', severity: 'high', author: 'CCTV-AI' },
+  { lat: 14.5965, lng: 121.0260, time: '14:38', barangay: 'Salapan',  desc: 'Power flickering, residents asking for help', severity: 'high', author: 'Ana D.' },
+  { lat: 14.5990, lng: 121.0350, time: '14:42', barangay: 'Kabayanan',desc: 'Sewers backing up near elementary school', severity: 'med', author: 'Brgy Captain' }
+];
+
+const aiInsights = [
+  {
+    type: 'STORM CELL DETECTED Â· ETA 47 MIN',
+    text: 'Convective storm cell developing 8.2 km E of San Juan, moving WSW at 22 km/h. Predicted direct impact: PasadeÃ±a, Salapan, Maytunas. Core: ~45 mm/h.',
+    confidence: 87,
+    severity: 'high'
+  },
+  {
+    type: 'PATTERN MATCH Â· HISTORICAL',
+    text: 'Atmospheric profile matches Aug 12 2025 event (1.2m flooding in PasadeÃ±a). Lead time then: 12 min. AGOS lead time now: 4h 23m.',
+    confidence: 91,
+    severity: 'med'
+  },
+  {
+    type: 'RECOMMENDED ACTION',
+    text: 'Pre-position pump unit at P. Guevarra Ã Pinaglabanan. Issue pre-evacuation advisory to PasadeÃ±a Zones 2-4. Activate Salapan evacuation center.',
+    confidence: null,
+    severity: 'high'
+  },
+  {
+    type: 'GAP vs PAGASA',
+    text: 'PAGASA: "isolated rain showers over NCR, 5-10mm." AGOS local: 35-45mm/h convective burst over 3 specific barangays. The gap is the lead time.',
+    confidence: null,
+    severity: 'med'
+  }
+];
+
+const alerts = [
+  { time: '14:42', severity: 'high', msg: 'WL-01 ErmitaÃ±o Creek at 1.85m (74% of critical), rising 4cm/15min' },
+  { time: '14:38', severity: 'high', msg: 'RG-03 PasadeÃ±a recorded 41.7 mm/h â heavy rain threshold exceeded' },
+  { time: '14:35', severity: 'med',  msg: 'CCTV-AI: water detected on Salapan Rd, est. depth 30cm' },
+  { time: '14:25', severity: 'med',  msg: 'Storm cell tracking confirmed via OpenMeteo + AGOS radar fusion' },
+  { time: '14:18', severity: 'low',  msg: 'Forecast confidence raised to 87% (from 71%)' },
+  { time: '14:02', severity: 'low',  msg: 'Sensor AGOS-WL-04 offline â comms timeout, field team dispatched' },
+  { time: '13:48', severity: 'low',  msg: 'PAGASA bulletin ingested Â· no localized warning issued nationally' }
+];
+
+// ============= MAP =============
+
+const map = L.map('map', { zoomControl: true, zoomSnap: 0.5 }).setView([14.6010, 121.0345], 14.5);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: 'Â© OpenStreetMap Â· CARTO',
+  subdomains: 'abcd',
+  maxZoom: 19
+}).addTo(map);
+
+function riskColor(r) {
+  if (r >= 0.75) return '#ff3366';
+  if (r >= 0.55) return '#ff8800';
+  if (r >= 0.35) return '#ffcc00';
+  return '#00ff88';
+}
+
+const barangayLayers = barangays.map(b => {
+  const radius = 200 + (b.pop / 16000) * 200;
+  const c = L.circle([b.lat, b.lng], {
+    color: riskColor(b.baseRisk),
+    fillColor: riskColor(b.baseRisk),
+    fillOpacity: 0.32,
+    weight: 1.5,
+    radius: radius
+  }).addTo(map);
+  c.bindTooltip(
+    `<b style="color:${riskColor(b.baseRisk)};">${b.name}</b><br/>` +
+    `<span style="color:#9aa3b8;">Population:</span> ${b.pop.toLocaleString()}<br/>` +
+    `<span style="color:#9aa3b8;">Elevation:</span> ${b.elev}m<br/>` +
+    `<span style="color:#9aa3b8;">Risk Score:</span> <b>${(b.baseRisk*100).toFixed(0)}%</b>`,
+    { className: 'leaflet-tooltip-own', direction: 'top' }
+  );
+  return { layer: c, barangay: b };
+});
+
+// Sensor markers
+sensors.forEach(s => {
+  const color = s.status === 'offline' ? '#ff3366' : (s.type === 'rain' ? '#00d4ff' : '#00ff88');
+  const shape = s.type === 'rain' ? 'border-radius:2px' : 'border-radius:50%';
+  const icon = L.divIcon({
+    html: `<div style="width:13px;height:13px;border:2px solid ${color};background:rgba(10,14,31,0.95);${shape};box-shadow:0 0 10px ${color};"></div>`,
+    className: '',
+    iconSize: [13,13], iconAnchor: [6.5,6.5]
+  });
+  const m = L.marker([s.lat, s.lng], { icon }).addTo(map);
+  const valueDisplay = s.status === 'online' ? `${s.value} ${s.unit}` : '<span style="color:#ff3366">OFFLINE</span>';
+  m.bindTooltip(
+    `<b style="color:${color};">${s.id}</b><br/>` +
+    `<span style="color:#9aa3b8;">${s.name} (${s.type === 'rain' ? 'Rain Gauge' : 'Water Level'})</span><br/>` +
+    `<b>${valueDisplay}</b>`,
+    { className: 'leaflet-tooltip-own', direction: 'top' }
+  );
+});
+
+// Citizen report markers
+citizenReports.forEach(r => {
+  const color = r.severity === 'high' ? '#ff3366' : '#ffcc00';
+  const icon = L.divIcon({
+    html: `<div style="width:18px;height:18px;display:flex;align-items:center;justify-content:center;background:${color};border-radius:50%;font-size:10px;color:white;font-weight:800;border:2px solid rgba(10,14,31,0.95);box-shadow:0 0 10px ${color};">!</div>`,
+    className: '',
+    iconSize: [18,18], iconAnchor: [9,9]
+  });
+  const m = L.marker([r.lat, r.lng], { icon }).addTo(map);
+  m.bindTooltip(
+    `<b>${r.barangay}</b> Â· <span style="color:#9aa3b8;">${r.time}</span><br/>` +
+    `"${r.desc}"<br/>` +
+    `<span style="color:#9aa3b8;">â ${r.author}</span>`,
+    { className: 'leaflet-tooltip-own', direction: 'top' }
+  );
+});
+
+// Storm cell visualization
+const stormCell = L.circle([14.5970, 121.0900], {
+  color: '#ff3366',
+  fillColor: '#ff3366',
+  fillOpacity: 0.15,
+  weight: 2,
+  dashArray: '6,4',
+  radius: 1700
+}).addTo(map);
+stormCell.bindTooltip(
+  `<b style="color:#ff3366;">â STORM CELL</b><br/>` +
+  `<span style="color:#9aa3b8;">Core:</span> ~45 mm/h<br/>` +
+  `<span style="color:#9aa3b8;">Direction:</span> WSW @ 22 km/h<br/>` +
+  `<span style="color:#9aa3b8;">ETA San Juan:</span> <b>47 min</b>`,
+  { className: 'leaflet-tooltip-own', direction: 'top' }
+);
+
+// Animated storm cell drift
+let stormStep = 0;
+const stormInterval = setInterval(() => {
+  stormStep = (stormStep + 1) % 30;
+  const newLng = 121.0900 - (stormStep * 0.0018);
+  const newLat = 14.5970 + (Math.sin(stormStep / 4) * 0.0008);
+  stormCell.setLatLng([newLat, newLng]);
+}, 2000);
+
+// ============= TIME SLIDER (FORECAST SCRUB) =============
+
+function updateForecast(hours) {
+  barangayLayers.forEach(({ layer, barangay }) => {
+    let newRisk = barangay.baseRisk;
+    const stormFactor = hours === 0 ? 0 :
+                        hours <= 2 ? hours * 0.22 :
+                        hours <= 4 ? 0.44 - (hours - 2) * 0.06 :
+                        Math.max(-0.05, 0.32 - (hours - 4) * 0.04);
+    const inPath = ['PasadeÃ±a','Salapan','Maytunas','ErmitaÃ±o','Santa Lucia','Kabayanan','Corazon de Jesus','Rivera'].includes(barangay.name);
+    if (inPath) newRisk = Math.max(0.1, Math.min(1, barangay.baseRisk + stormFactor));
+    layer.setStyle({ color: riskColor(newRisk), fillColor: riskColor(newRisk) });
+  });
+
+  document.getElementById('mapForecastTime').textContent = hours === 0 ? 'NOW' : `+${hours}h`;
+  const labelEl = document.getElementById('timeSliderLabel');
+  labelEl.innerHTML = hours === 0
+    ? `NOW<small>+0 HOURS</small>`
+    : `+${hours}h<small>FORECAST</small>`;
+}
+
+document.getElementById('timeSlider').addEventListener('input', (e) => {
+  updateForecast(parseInt(e.target.value));
+});
+
+// ============= SIDE PANELS =============
+
+const aiContainer = document.getElementById('aiInsights');
+aiInsights.forEach(i => {
+  const div = document.createElement('div');
+  div.className = `ai-insight ${i.severity}`;
+  div.innerHTML = `
+    <div class="ai-insight-meta">${i.type}</div>
+    <div class="ai-insight-text">${i.text}</div>
+    ${i.confidence ? `<div class="ai-confidence">MODEL CONFIDENCE: ${i.confidence}%</div>` : ''}
+  `;
+  aiContainer.appendChild(div);
+});
+
+const alertContainer = document.getElementById('alertFeed');
+alerts.forEach(a => {
+  const div = document.createElement('div');
+  div.className = `alert-item ${a.severity}`;
+  div.innerHTML = `<div class="alert-time">${a.time}</div><div class="alert-msg">${a.msg}</div>`;
+  alertContainer.appendChild(div);
+});
+
+const reportContainer = document.getElementById('citizenReports');
+citizenReports.forEach(r => {
+  const div = document.createElement('div');
+  div.className = 'report-item';
+  div.innerHTML = `
+    <div class="report-meta"><span><b>${r.barangay}</b> Â· ${r.time}</span><span>${r.author}</span></div>
+    <div class="report-text">"${r.desc}"</div>
+    <div class="report-tag ${r.severity === 'high' ? '' : 'med'}">${r.severity.toUpperCase()}</div>
+  `;
+  reportContainer.appendChild(div);
+});
+
+// Sensor grid
+const sensorGrid = document.getElementById('sensorGrid');
+sensors.forEach(s => {
+  const div = document.createElement('div');
+  let cls = 'sensor-card';
+  if (s.status === 'offline') cls += ' offline';
+  else if (s.type === 'rain' && s.value > 35) cls += ' crit';
+  else if (s.type === 'rain' && s.value > 20) cls += ' warn';
+  else if (s.type === 'water' && s.critical && s.value > s.critical * 0.7) cls += ' warn';
+  div.className = cls;
+  div.innerHTML = `
+    <div>
+      <div class="sensor-name">${s.id}</div>
+      <div class="sensor-meta">${s.name}</div>
+    </div>
+    <div class="sensor-value">${s.status === 'offline' ? 'OFF' : s.value}<span style="font-size:9px;color:var(--text-muted);margin-left:3px;">${s.status === 'offline' ? '' : s.unit}</span></div>
+  `;
+  sensorGrid.appendChild(div);
+});
+
+// ============= CHARTS =============
+
+Chart.defaults.color = '#9aa3b8';
+Chart.defaults.font.family = 'Inter, sans-serif';
+Chart.defaults.font.size = 10.5;
+
+// Rain forecast chart
+const rainCtx = document.getElementById('rainChart').getContext('2d');
+const hoursLabels = ['Now','+1h','+2h','+3h','+4h','+5h','+6h','+7h','+8h','+9h','+10h','+11h','+12h'];
+
+new Chart(rainCtx, {
+  type: 'line',
+  data: {
+    labels: hoursLabels,
+    datasets: [
+      {
+        label: 'AGOS Local Model',
+        data: [22, 35, 48, 41, 28, 18, 12, 8, 5, 3, 2, 1, 1],
+        borderColor: '#00d4ff',
+        backgroundColor: 'rgba(0,212,255,0.18)',
+        tension: 0.4, borderWidth: 2.5, fill: true,
+        pointRadius: 3, pointBackgroundColor: '#00d4ff', pointBorderWidth: 0
+      },
+      {
+        label: 'PAGASA',
+        data: [8, 9, 10, 8, 7, 6, 6, 5, 4, 3, 3, 2, 2],
+        borderColor: '#ffcc00', borderDash: [5,4],
+        backgroundColor: 'transparent',
+        tension: 0.4, borderWidth: 1.5, pointRadius: 0
+      },
+      {
+        label: 'OpenMeteo',
+        data: [10, 12, 14, 13, 10, 8, 7, 5, 4, 3, 2, 2, 1],
+        borderColor: '#ff8800', borderDash: [5,4],
+        backgroundColor: 'transparent',
+        tension: 0.4, borderWidth: 1.5, pointRadius: 0
+      },
+      {
+        label: 'Google Flood Hub',
+        data: [11, 13, 15, 14, 11, 9, 7, 5, 4, 3, 2, 2, 1],
+        borderColor: '#00ff88', borderDash: [5,4],
+        backgroundColor: 'transparent',
+        tension: 0.4, borderWidth: 1.5, pointRadius: 0
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { boxWidth: 12, padding: 10, font: { size: 10 }, usePointStyle: true, pointStyle: 'line' }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(10,14,31,0.97)',
+        borderColor: '#1f2747', borderWidth: 1,
+        titleColor: '#00d4ff', bodyColor: '#e8ecf5',
+        padding: 10,
+        callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y} mm/h` }
+      }
+    },
+    scales: {
+      x: { grid: { color: 'rgba(31,39,71,0.4)' }, ticks: { font: { size: 10 } } },
+      y: {
+        grid: { color: 'rgba(31,39,71,0.4)' },
+        title: { display: true, text: 'mm/h', font: { size: 10 }, color: '#5b6480' },
+        ticks: { font: { size: 10 } }
+      }
+    }
+  }
+});
+
+// Water levels chart
+const waterCtx = document.getElementById('waterChart').getContext('2d');
+const waterHoursLabels = ['-6h','-5h','-4h','-3h','-2h','-1h','Now'];
+
+new Chart(waterCtx, {
+  type: 'line',
+  data: {
+    labels: waterHoursLabels,
+    datasets: [
+      {
+        label: 'ErmitaÃ±o Creek',
+        data: [1.10,1.15,1.22,1.35,1.52,1.70,1.85],
+        borderColor: '#ff3366',
+        backgroundColor: 'rgba(255,51,102,0.1)',
+        tension: 0.3, borderWidth: 2.5, pointRadius: 3, pointBackgroundColor: '#ff3366', fill: false
+      },
+      {
+        label: 'San Juan River',
+        data: [1.65,1.70,1.78,1.88,1.95,2.05,2.10],
+        borderColor: '#ff8800',
+        tension: 0.3, borderWidth: 2.5, pointRadius: 3, pointBackgroundColor: '#ff8800'
+      },
+      {
+        label: 'Diliman Creek',
+        data: [0.85,0.86,0.88,0.90,0.92,0.94,0.95],
+        borderColor: '#00ff88',
+        tension: 0.3, borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#00ff88'
+      },
+      {
+        label: 'Critical (ErmitaÃ±o)',
+        data: [2.5,2.5,2.5,2.5,2.5,2.5,2.5],
+        borderColor: 'rgba(255,51,102,0.4)',
+        borderDash: [3,3], pointRadius: 0, borderWidth: 1, fill: false
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { boxWidth: 12, padding: 10, font: { size: 10 }, usePointStyle: true, pointStyle: 'line' }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(10,14,31,0.97)',
+        borderColor: '#1f2747', borderWidth: 1,
+        titleColor: '#00d4ff', bodyColor: '#e8ecf5',
+        padding: 10,
+        callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y} m` }
+      }
+    },
+    scales: {
+      x: { grid: { color: 'rgba(31,39,71,0.4)' }, ticks: { font: { size: 10 } } },
+      y: {
+        grid: { color: 'rgba(31,39,71,0.4)' },
+        title: { display: true, text: 'meters', font: { size: 10 }, color: '#5b6480' },
+        ticks: { font: { size: 10 } },
+        beginAtZero: false
+      }
+    }
+  }
+});
+
+// ============= CLOCK =============
+function updateClock() {
+  const d = new Date();
+  const time = d.toLocaleTimeString('en-PH', { hour12: false });
+  const date = d.toLocaleDateString('en-PH', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+  document.getElementById('clock').textContent = time;
+  document.getElementById('date').textContent = date + ' Â· PHT';
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// Initial paint
+updateForecast(0);
+
+// Live data simulation - tiny fluctuations on sensor values
+setInterval(() => {
+  document.querySelectorAll('.sensor-value').forEach(el => {
+    const txt = el.firstChild.textContent;
+    if (txt === 'OFF') return;
+    const num = parseFloat(txt);
+    if (isNaN(num)) return;
+    const fluct = (Math.random() - 0.45) * (num > 5 ? 0.6 : 0.04);
+    const newVal = (num + fluct).toFixed(num > 5 ? 1 : 2);
+    el.firstChild.textContent = newVal;
+  });
+}, 3500);
+</script>
+</body>
+</html>
